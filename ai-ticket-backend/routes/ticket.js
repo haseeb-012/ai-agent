@@ -1,10 +1,9 @@
-import { authenticate } from "../middleware/auth";
+import { authenticate } from "../middleware/auth.js";
 import {
   createTicket,
   getTicket,
   getTickets,
 } from "./../controllers/ticket.js";
-import { authenticate } from "../middleware/auth";
 import express from "express";
 
 const router = express.Router();
