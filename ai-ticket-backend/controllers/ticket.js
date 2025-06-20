@@ -81,14 +81,15 @@ export const getTicket = async (req, res) => {
     }
 
     if (!ticket) {
-      return res.status().j404son({ message: "Ticket Not Found" });
+      // Fix: add status code 404
+      return res.status(404).json({ message: "Ticket Not Found" });
     }
 
     return res.status(200).json(ticket);
   } catch (err) {
     console.error("Error in Getting Ticket", err);
     return res.status(500).json({
-      message: "interval server Error",
+      message: "Internal Server Error", // Fixed typo
       success: false,
     });
   }

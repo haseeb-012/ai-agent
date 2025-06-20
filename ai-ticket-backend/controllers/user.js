@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
-import { inngest, Inngest } from '../inngest/client.js';
+import { inngest} from '../inngest/client.js';
 
 
 export const signup = async (req,res)=>{
@@ -52,8 +52,8 @@ export const login = async (req,res)=>{
     const { email, password } = req.body;
 
     try{
-        const user = await User.find({ email });
-        if(!user || user.length === 0) {
+        const user = await User.findOne({ email }); // Changed to findOne
+        if(!user) {
             return res.status(404).json({
                 message: 'User not found'
             });
@@ -115,27 +115,30 @@ export const logout = async (req, res) => {
 
 
 export const updateUser = async (req, res) => {
-   const {email,skills=[],role} = req.body;
+   const {email, skills=[], role} = req.body;
    try{
        if(req.user?.role !== 'admin') {
            return res.status(403).json({
                message: 'Forbidden: Only admins can update users'
            });
        }
-    const user = await User.findById({email});
+    // Fix findById to findOne
+    const user = await User.findOne({email});
     if(!user) {
         return res.status(404).json({
             message: 'User not found'
         });
     }
 
-    await User.updateOne({
-        email,
+    await User.updateOne(
+      { email },  // query criteria
+      {  // update document
         skills: skills.length ? skills : user.skills,
         role,
-    })
+      }
+    );
 
-    return res.json({
+    return res.status(200).json({
         message: 'User updated successfully'
     });
         
@@ -151,16 +154,19 @@ export const updateUser = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
+        console.log("User requesting access:", req.user);
+        
         if(req.user?.role !== 'admin') {
             return res.status(403).json({
                 message: 'Forbidden: Only admins can access user details'
             });
         } 
+        
         const users = await User.find().select('-password');
-        res.json(users);
+        return res.status(200).json(users);  // Add status code and return
     } catch (error) {
         console.error('Error fetching user:', error);
-        res.status(500).json({
+        return res.status(500).json({
             message: 'Internal server error',
             error: error.message
         });
